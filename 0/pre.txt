@@ -1,9 +1,11 @@
 
 * hardware architectures (harvard, von Neumann)
+* history of operating systems
 * machine human interaction
 * the environment for executing programs
 * executable formats
 * loading, terminating programs
+* process control
 * memory layout
 * memory related security
 * share resources
@@ -11,5 +13,5 @@
 * parallel programming
 * files, file systems
 * fs security
-
+* file system features
 
