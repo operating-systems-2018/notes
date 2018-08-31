@@ -1,0 +1,36 @@
+
+lab session
+Encodings: ASCII, ArmSCII-8, UTF-16, UTF-8.
+Soviet telegraph encoding.
+
+Terminal:
+/bin/login - the executable which implements login prompt.
+the terminal and the shell
+
+why we do use terminal and the shell?
+is terminal a modern or outdated concept?
+the paper, editing previously written commands.
+
+control characters.
+
+ctrl+g	BELL		007     07
+ctrl+h	BS		008     08
+ctrl+i	TAB		009     09
+ctrl+j	LF			010     10
+ctrl+k	VT		011     0A
+ctrl+l	FF			012     0B
+ctrl+m	CR		013     0D
+ctrl+z	SUB		026     16
+ctrl+[	ESC		027     17
+ctrl+?	DEL		127		7F
+
+Getting  familiar with Unix environment.
+Shell.
+File system navigation.
+., .., cd, pwd, relative and absolute paths.
+Basic programs from coreutils and util-linux package.
+
+Standard output, standard input, redirection.
+
+
+

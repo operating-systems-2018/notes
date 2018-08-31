@@ -1,0 +1,15 @@
+History of operating systems.
+
+Functions of old operating systems which run on mainframes.
+Terminals, vt100.
+
+Terminal emulators: xterm.
+Terminal device files: /dev/pts/* /dev/tty*
+
+Sending message from one terminal to the other by writing in to device files by identifying the other terminal with 'w' and writing with 'echo'.
+
+DOS, Windows 9x, Windows NT evolution, in particular:
+* memory models: segmented vs flat.
+* task switchers: co-operative task switcher vs pre-emptive multitasking(meaning your machine wouldn't lock up due to busy loops, and would have to find new 32 bit ways to lock up instead.
+
+
