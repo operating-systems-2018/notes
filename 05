@@ -1,0 +1,27 @@
+Shell, processes
+
+What is shell, and how does it differ from the terminal?
+
+/bin/login
+/bin/bash
+
+Environment variables
+
+export, env.
+
+Environment variables in parent and child processes.
+
+su, su -
+
+Processes
+pstree, ps
+
+top
+
+Process exit status.
+
+Paths.
+
+source (sourcing) variables.
+
+
