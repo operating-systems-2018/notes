@@ -12,9 +12,11 @@ Office Hours:					Tue(19:30-20:30), Th(19:30-20:30), also by appointment.
 
 Term/Year: 
 
-Class Schedule:				MW 9:30-10:20 at 614M
+Class Schedule:				
 
-                      F 9:30-10:20 at 002M
+* MW 9:30-10:20 at 614M
+
+* F 9:30-10:20 at 002M
 
 
 Course Description:  
