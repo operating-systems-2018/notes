@@ -29,7 +29,7 @@ Andrew Tanenbaum: Modern Operating Systems.
 Andrew Tanenbaum, Albert S. Woodhull: Operating Systems Design and Implementation (The Minix book).
 Brian Kernighan, Rob Pike: The Unix Programming Environment.
 
-Also, take a look at [this](https://github.com/operating-systems-2018/notes/blob/master/literature) list.
+Also, take a look at [this](https://github.com/operating-systems-2018/notes/blob/master/literature.md) list.
 
 
 Schedule & Topics: [Note:  Review and Q&A in preparation for exams should be scheduled and noted on syllabus.]
