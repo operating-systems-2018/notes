@@ -1,11 +1,11 @@
 Subject Code and Course Number:			CS 331
-Course Title:												Operating System Principles
-Number of Credits:									3
-Instructor Name:										Norayr Chilingarian
-Email Address:											nchilingaryan@aua.am
-Telephone Number:									010 492450
+Course Title:							  Operating System Principles
+Number of Credits:				  3
+Instructor Name:					  Norayr Chilingarian
+Email Address:							nchilingaryan@aua.am
+Telephone Number:						010 492450
 
-Office Location:				336W (PAB)
+Office Location:			336W (PAB)
 Office Hours:					Tue(19:30-20:30), Th(19:30-20:30), also by appointment.
 Term/Year: 
 Class Schedule:				MW 9:30-10:20 at 614M
@@ -28,6 +28,8 @@ Required Materials:
 Andrew Tanenbaum: Modern Operating Systems.
 Andrew Tanenbaum, Albert S. Woodhull: Operating Systems Design and Implementation (The Minix book).
 Brian Kernighan, Rob Pike: The Unix Programming Environment.
+
+Also, take a look at [this](https://github.com/operating-systems-2018/notes/blob/master/literature) list.
 
 
 Schedule & Topics: [Note:  Review and Q&A in preparation for exams should be scheduled and noted on syllabus.]
