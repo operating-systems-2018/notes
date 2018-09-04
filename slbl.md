@@ -83,3 +83,19 @@ Schedule & Topics: [Note:  Review and Q&A in preparation for exams should be sch
 | 15   	| Alternative approaches to OS design. Oberon, Inferno. Memory protection in single space systems, design benefits and disadvantages. 	|                                                                                                          	|          	|   	|
 |      	| Project Completion/Submission                                                                                                       	|                                                                                                          	|          	|   	|
 |      	| Final Examination                                                                                                                   	|                                                                                                          	|          	|   	|
+
+
+Course Structure 
+Three 50 minute class meetings per week, with homework in accordance with the syllabus. All readings and submissions must be completed on the day due. One project, two midterms and a final exam at the end of the course. Class attendance is mandatory.
+Syllabus plan is subject to change and serves mere as a roadmap, rather than exact schedule.
+
+Method of Evaluation 
+
+Student learning will be evaluated on the basis of the following weighted components: 
+
+• Homework assignments        20% of final grade 
+• Grade of midterm examinations    25% 
+• Projects                25% 
+• Grade of final examination        30% 
+
+
