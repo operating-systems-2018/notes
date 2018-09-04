@@ -36,9 +36,9 @@ Copy/commit these files to your repository.
 
 * Create a shell script, which will take the file to spell, and by using the dictionary, print to the standard output words that contain mistakes.
 
-Use pipeline to solve the problem.
+You may want to use pipeline to solve the problem.
 
-Use this link to get an assignment.
+Use [this link](https://classroom.github.com/a/DQ4CsrXs) to start with an assignment.
 
 Refer to [this tutorial](https://github.com/operating-systems-2018/notes/blob/master/asgmnt_tutorial.md) on how to create a team with one member (you!) and a repository for your team will be created automatically.
 
