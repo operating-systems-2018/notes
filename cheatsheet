@@ -16,6 +16,7 @@ fg, bg
 
 ^c, ^z
 
+environment variables
 
 -----------------------------------
 each program has
