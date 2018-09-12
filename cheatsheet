@@ -1,0 +1,88 @@
+------------------------------------
+on shell
+------------------------------------
+terminal is not a shell.
+is just a program which reads and writes terminal files (tty, pts)
+
+cat somefile otherfile > newfile 
+cat gets two program arguments - somefile and otherfile
+shell redirects stdout of the cat to the newfile
+
+>, >>, |
+
+signals:
+jobs (man jobs)
+fg, bg
+
+^c, ^z
+
+
+-----------------------------------
+each program has
+-----------------------------------
+
+stdin, stdout, stderr.
+
+program arguments
+
+in shell you read those by $1 $2 etc.
+
+in C (or other languages) TODO.
+
+
+------------------------------------
+on basic programs
+------------------------------------
+core programs in /bin
+user(extra) programs in /usr/bin
+
+navigate the file system:
+cd, pwd, mkdir, ls, rm... 
+
+text processing:
+cat, tail, head, wc, tr, awk, sed
+
+fs:
+touch, chmod, chown
+
+user, group management
+passwd, chgrp, gpasswd...
+
+ps, pstree, renice, nice, kill, top, htop. (process management)
+
+
+text editors
+vim, nano
+
+
+
+git 
+
+man IS YOUR FRIEND.
+
+
+
+----------------------------------
+on filesystems
+---------------------------------
+libraries in /lib and /usr/lib/
+
+
+
+TODO:
+ - user modes, ownership: chmod, chown
+ - how passwd works - set user id on execution 
+ - symlinks vs hardlinks
+ - locks
+ - access time, mod time
+ ----------------------------------
+ on processes
+ ----------------------------------
+
+
+ process management, process states, 
+ parent and child processes
+ signals
+
+background, foreground, &, ||, nohup
+
