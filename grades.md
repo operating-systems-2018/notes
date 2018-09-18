@@ -1,18 +1,35 @@
 kenthompson			A-
+
 jeffreyullman		A+
+
 adalovelace			A  #dot
+
 edsgerdijkstra		A+ #notice
+
 margarethamilton	A+
+
 niklauswirth		A
+
 johnmccarthy		A+
+
 briankernighan
+
 paulvixie			A	#comm does not accept -i argument, btw .swp file
+
 robpike				A
+
 alfredaho			A
+
 fabricebellard		A+
+
 norbertwiener		A+
+
 johnbackus			A+
+
 avietevanian		A- #not what was taught, does not work correctly, btw swp, swo files.
+
 adelegoldberg		A+
+
 peternaur
+
 jamiezawinski		A+
