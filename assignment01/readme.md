@@ -1,4 +1,4 @@
-
+assignment link: https://classroom.github.com/a/xiRiXh96
 
 In this task you have to write a commandline program which takes strings from the standard input, processes them, and writes to the standard output.
 
