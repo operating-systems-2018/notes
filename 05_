@@ -1,0 +1,76 @@
+
+shell
+; && ||
+echo "" > /root/tmp.txt
+echo "" > /root/tmp.txt && echo "went ok"
+echo "" > /root/tmp.txt ; echo "went ok"
+echo "" > /root/tmp.txt || echo "failed"
+
+processes.
+
+foreground - controlled through a terminal session.
+background - process that not connected to a terminal.
+ -- daemon - special type of the background process that starts at system startup and runs forever - they don't die. (services).
+ps -aef aux
+pidof
+PID, PPID, UID, GID
+in shell
+echo $$
+echo $PPID
+effective process id - passwd program example.
+chown and chmod - how to get root shell.
+process states:
+* running
+* waiting
+* stopped
+* zombie
+
+init, process ID 1
+
+fork()
+system()
+exec()
+
+parent processes, child processes.
+
+in Linux, orphaned process gets adopted by the init.
+
+Stack, Heap, Data, Text.
+
+
+nohup
+&
+
+$ atril
+$ atril &
+$ jobs
+$ nohup atril
+screen
+
+ctrl-z
+ctrl-c
+fg
+bg
+vim test.c
+cc -o test test.c
+
+echo $?
+return 0;
+
+process environment, or environment variables.
+
+processes
+ps
+pstree
+wait, kill
+signals
+
+nice expensiveprocess
+
+at 10:05
+echo "aaa" > /tmp/aaa
+^d
+
+watch ls /tmp/
+
+init process
