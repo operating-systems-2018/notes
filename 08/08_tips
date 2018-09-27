@@ -1,0 +1,119 @@
+
+char a[] = "hello";
+char *p = "world";
+
+	   +---+---+---+---+---+---+
+	a: | h | e | l | l | o |\0 |
+	   +---+---+---+---+---+---+
+
+	   +-----+     +---+---+---+---+---+---+
+	p: |  *======> | w | o | r | l | d |\0 |
+	   +-----+     +---+---+---+---+---+---+
+
+http://www.lysator.liu.se/c/c-faq/c-2.html
+
+--------------------------------
+
+string functions
+
+strcpy(dst, src)
+Copies string src into string dst.
+
+strcat(dst, src)
+Concatenates string src onto the end of string dst.
+
+strlen(s)
+Returns the length of string s
+
+strcmp(s1, s2)
+Returns 0 if s1 and s2 are the same; less than 0 if s1<s2; greater than 0 if s1>s2.
+
+strchr(str, ch)
+Returns a pointer to the first occurrence of character ch in string str.
+
+strstr(s1, s2)
+Returns a pointer to the first occurrence of string s2 in string s1.
+----------------------------
+
+FILE *myfile;
+
+myfile = fopen ("hello.txt", "r");
+
+fclose(myfile);
+
+------------------------
+
+fscanf (myfile, "%s%d", str, &a);
+
+--------------------------------
+
+apples 10 23.4
+bananas 5 25.0
+bread 1 10.3
+
+
+-------------------------
+
+#include <stdio.h>
+
+main () {
+	FILE *file;
+	struct food {
+		char name[20];
+		unsigned qty;
+		float price;
+	};
+	struct food shop[10];
+	char i=0;
+
+	file = fopen("fscanf.txt", "r");
+
+	while (fscanf (file, "%s%u%f", shop[i].name, &(shop[i].qty), &(shop[i].price)) != EOF) {
+		printf("%s %u %.2f\n", shop[i].name, shop[i].qty, shop[i].price);
+		i++;
+	}
+}
+
+-------------------------------
+
+fgets (str, 50, myfile)
+
+---------------------------
+
+while ((arr[i] = fgetc (file)) != EOF) {
+		if (arr[i] == '\n') {
+			arr[i] = '\0';
+			printf("%s\n",arr);
+			i = 0;
+		}
+		else i++;
+	}
+	arr[i] = '\0';
+	printf("%s\n",arr);
+---------------------------------------
+
+	file = fopen("fprintf.txt", "w");
+
+	while (scanf ("%s%u%f", shop[i].name, &(shop[i].qty), &(shop[i].price)) != EOF) {
+		fprintf(file, "%s %u %.2f\n", shop[i].name, shop[i].qty, shop[i].price);
+		i++;
+	}
+--------------------------------
+
+puts() puts \n to the end of the string.
+fputs() does not.
+
+-------------------------------
+
+while (gets (arr) != NULL) {
+		fputs(arr, file);
+		fputs("\n", file);
+	}
+-------------------------------
+
+tasks:
+
+0: get a name of the file via arg, then counts number of lines.
+1: read a file and output only second column.
+
+---------------------------
