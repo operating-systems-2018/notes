@@ -16,5 +16,5 @@ int main()
    //....
    write(1, buf, 1);
   }
-  fflush(stdout);
+  fflush();
 }
