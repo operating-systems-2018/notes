@@ -1,0 +1,4 @@
+
+
+all:
+		cc -S -fverbose-asm novol.c
