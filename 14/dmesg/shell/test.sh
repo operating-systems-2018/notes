@@ -1,0 +1,1 @@
+echo MESSAGE > /dev/kmsg

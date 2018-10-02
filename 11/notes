@@ -1,0 +1,274 @@
+https://linuxaria.com/howto/linux-memory-management
+
+Linux has this basic rule: a page of free RAM is wasted RAM.
+
+getpagesize()
+
+RAM is used for a lot more than just user application data. It also stores data for the kernel itself and, most importantly, can mirror data stored on the disk for super-fast access, this is reported usually as “buffers/cache”, “disk cache” or “cached” by top. Cached memory is essentially free, in that it can be replaced quickly if a running (or newly starting) program needs the memory.
+
+Keeping the cache means that if something needs the same data again, there’s a good chance it will still be in the cache in memory.
+
+So as first thing in your system you can use the command free to get a first idea of how is going the use of your RAM.
+
+
+# free
+             total       used       free     shared    buffers     cached
+Mem:          1506       1373        133          0         40        359
+-/+ buffers/cache:        972        534
+Swap:          486         24        462
+
+The -/+ buffers/cache line shows how much memory is used and free from the perspective of the applications. In this example 972 MB of RAM are used and 534 MB are available for applications.
+Generally speaking, if little swap is being used, memory usage isn’t impacting performance at all.
+
+But if you want to get some more information about your memory the file you must check is /proc/meminfo
+
+
+# cat /proc/meminfo
+
+MemTotal and MemFree are easily understandable for everyone, these are some of the other values:
+
+Cached
+The Linux Page Cache (“Cached:” from meminfo ) is the largest single consumer of RAM on most systems. Any time you do a read() from a file on disk, that data is read into memory, and goes into the page cache. After this read() completes, the kernel has the option to simply throw the page away since it is not being used. However, if you do a second read of the same area in a file, the data will be read directly out of memory and no trip to the disk will be taken. This is an incredible speedup and is the reason why Linux uses its page cache so extensively: it is betting that after you access a page on disk a single time, you will soon access it again.
+
+dentry/inode caches
+Each time you do an ‘ls’ (or any other operation: open(), stat(), etc…) on a filesystem, the kernel needs data which are on the disk. The kernel parses these data on the disk and puts it in some filesystem-independent structures so that it can be handled in the same way across all different filesystems. In the same fashion as the page cache in the above examples, the kernel has the option of throwing away these structures once the ‘ls’ is completed. However, it makes the same bets as before: if you read it once, you’re bound to read it again. The kernel stores this information in several “caches” called the dentry and inode caches. dentries are common across all filesystems, but each filesystem has its own cache for inodes.
+
+This ram is a component of “Slab:” in meminfo
+
+You can view the different caches and their sizes by executing this command:
+
+ head -2 /proc/slabinfo; cat /proc/slabinfo  | egrep dentry\|inode
+
+Buffer Cache
+The buffer cache (“Buffers:” in meminfo) is a close relative to the dentry/inode caches. The dentries and inodes in memory represent structures on disk, but are laid out very differently. This might be because we have a kernel structure like a pointer in the in-memory copy, but not on disk. It might also happen that the on-disk format is a different endianness than CPU.
+
+
+Memory mapping in top: VIRT, RES and SHR
+
+When you are running top there are three fields related to memory usage. In order to assay your server memory requirements you have to understand their meaning.
+
+VIRT stands for the virtual size of a process, which is the sum of memory it is actually using, memory it has mapped into itself (for instance the video cards’s RAM for the X server), files on disk that have been mapped into it (most notably shared libraries), and memory shared with other processes. VIRT represents how much memory the program is able to access at the present moment.
+
+RES stands for the resident size, which is an accurate representation of how much actual physical memory a process is consuming. (This also corresponds directly to the %MEM column.) This will virtually always be less than the VIRT size, since most programs depend on the C library.
+
+SHR indicates how much of the VIRT size is actually sharable (memory or libraries). In the case of libraries, it does not necessarily mean that the entire library is resident. For example, if a program only uses a few functions in a library, the whole library is mapped and will be counted in VIRT and SHR, but only the parts of the library file containing the functions being used will actually be loaded in and be counted under RES.
+
+Swap
+
+Now we have seen some information on our RAM, but what happens when there is no more free RAM? If I have no memory free, and I need a page for the page cache, inode cache, or dentry cache, where do I get it?
+
+First of all the kernel tries not to let you get close to 0 bytes of free RAM. This is because, to free up RAM, you usually need to allocate more. This is because our Kernel need a kind of “working space” for its own housekeeping, and so if it arrives to zero free RAM it cannot do anything more.
+
+Based on the amount of RAM and the different types (high/low memory), the kernel comes up with a heuristic for the amount of memory that it feels comfortable with as its working space. When it reaches this watermark, the kernel starts to reclaim memory from the different uses described above. The kernel can get memory back from any of the these.
+
+However, there is another user of memory that we may have forgotten about by now: user application data.
+When the kernel decides not to get memory from any of the other sources we’ve described so far, it starts to swap. During this process it takes user application data and writes it to a special place (or places) on the disk, note that this happen not only when RAM go close to become full, but the Kernel can decide to move to swap also some data on RAM that has not be used from some time (see swappiness).
+For this reason, even a system with vast amounts of RAM (even when properly tuned) can swap. There are lots of pages of memory which are user application data, but are rarely used. All of these are targets for being swapped in favor of other uses for the RAM.
+
+You can check if swap is used with the command free, the last line of the output show information about our swap space, taking the free I’ve used in the example above:
+
+xubuntu-home:~# free
+             total       used       free     shared    buffers     cached
+Mem:          1506       1373        133          0         40        359
+-/+ buffers/cache:        972        534
+Swap:          486         24        462
+
+We can see that on this computer there are 24 MB of swap used and 462 MB available.
+
+So the mere presence of used swap is not evidence of a system which has too little RAM for its workload, the best way to determine this is to use the command vmstat if you see a lot of pages that are swapped in (si) and out (so) it means that the swap is actively used and that the system is “thrashing” or that it is needing new RAM as fast as it can swap out application data.
+
+This is an output on my gentoo laptop, while it’s idle:
+
+~ # vmstat 5 5
+procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
+ 1  0      0 2802448  25856 731076    0    0    99    14  365  478  7  3 88  3
+ 0  0      0 2820556  25868 713388    0    0     0     9  675  906  2  2 96  0
+ 0  0      0 2820736  25868 713388    0    0     0     0  675  925  3  1 96  0
+ 2  0      0 2820388  25868 713548    0    0     0     2  671  901  3  1 96  0
+ 0  0      0 2820668  25868 713320    0    0     0     0  681  920  2  1 96  0
+
+Note that in the output of the free command you have just 2 values about swap: free and used, but there is another important value also for the swap space : Swap cache.
+
+Swap Cache
+
+The swap cache is very similar in concept to the page cache. A page of user application data written to disk is very similar to a page of file data on the disk. Any time a page is read in from swap (“si” in vmstat), it is placed in the swap cache. Just like the page cache, this is a bet on the kernel’s part. It is betting that we might need to swap this page out _again_. If that need arises, we can detect that there is already a copy on the disk and simply throw the page in memory away immediately. This saves us the cost of re-writing the page to the disk.
+
+The swap cache is really only useful when we are reading data from swap and never writing to it. If we write to the page, the copy on the disk is no longer in sync with the copy in memory. If this happens, we have to write to the disk to swap the page out again, just like we did the first time. However, the cost of saving _any_ writes to disk is great, and even with only a small portion of the swap cache ever written to, the system will perform better.
+
+So to know the swap used for real we should subtract to the value of SwapUsed the value of SwapCached , you can find these information in /proc/meminfo
+
+Swappiness
+
+When an application needs memory and all the RAM is fully occupied, the kernel has two ways to free some memory at its disposal: it can either reduce the disk cache in the RAM by eliminating the oldest data or it may swap some less used portions (pages) of programs out to the swap partition on disk. It is not easy to predict which method would be more efficient. The kernel makes a choice by roughly guessing the effectiveness of the two methods at a given instant, based on the recent history of activity.
+
+Before the 2.6 kernels, the user had no possible means to influence the calculations and there could happen situations where the kernel often made the wrong choice, leading to thrashing and slow performance. The addition of swappiness in 2.6 changes this.
+
+Swappiness takes a value between 0 and 100 to change the balance between swapping applications and freeing cache. At 100, the kernel will always prefer to find inactive pages and swap them out; in other cases, whether a swapout occurs depends on how much application memory is in use and how poorly the cache is doing at finding and releasing inactive items.
+
+The default swappiness is 60. A value of 0 gives something close to the old behavior where applications that wanted memory could shrink the cache to a tiny fraction of RAM. For laptops which would prefer to let their disk spin down, a value of 20 or less is recommended.
+
+mkswap, swapon, swapoff.
+
+overcommit memory, malloc()
+
+man 5 proc
+
+https://www.kernel.org/doc/Documentation/vm/overcommit-accounting
+
+>This file contains the kernel virtual memory accounting mode. Values are:
+
+    0: heuristic overcommit (this is the default)
+    1: always overcommit, never check
+    2: always check, never overcommit
+
+    In mode 0, calls of mmap(2) with MAP_NORESERVE are not checked, and the default check is very weak, leading to the risk of getting a process "OOM-killed". Under Linux 2.4 any non-zero value implies mode 1.
+
+    In mode 2 (available since Linux 2.6), the total virtual address space on the system is limited to (SS + RAM*(r/100)), where "SS" is the size of the swap space, and RAM is the size of the physical memory, and "r" is the contents of the file /proc/sys/vm/overcommit_ratio.
+
+The simple answer is that setting overcommit to 1, will set the stage so that when a program calls something like malloc() to allocate a chunk of memory (man 3 malloc), it will always succeed regardless if the system knows it will not have all the memory that is being asked for.
+
+The underlying concept to understand is the idea of virtual memory. Programs see a virtual address space that may, or may not, be mapped to actual physical memory. By disabling overcommit checking, you tell the OS to just assume that there is always enough physical memory to backup the virtual space.
+
+from man malloc:
+
+NOTES
+       By  default,  Linux  follows  an optimistic memory allocation strategy.
+       This means that when malloc() returns non-NULL there  is  no  guarantee
+       that  the  memory  really  is available.  In case it turns out that the
+       system is out of memory, one or more processes will be  killed  by  the
+       OOM   killer.    For   more   information,   see   the  description  of
+       /proc/sys/vm/overcommit_memory and /proc/sys/vm/oom_adj in proc(5), and
+       the Linux kernel source file Documentation/vm/overcommit-accounting.
+
+
+http://www.win.tue.nl/~aeb/linux/lk/lk-9.html#ss9.6
+
+>Normally, a user-space program reserves (virtual) memory by calling malloc(). If the return value is NULL, the program knows that no more memory is available, and can do something appropriate. Most programs will print an error message and exit, some first need to clean up lockfiles or so, and some smarter programs can do garbage collection, or adapt the computation to the amount of available memory. This is life under Unix, and all is well.
+
+Linux on the other hand is seriously broken. It will by default answer "yes" to most requests for memory, in the hope that programs ask for more than they actually need. If the hope is fulfilled Linux can run more programs in the same memory, or can run a program that requires more virtual memory than is available. And if not then very bad things happen.
+
+What happens is that the OOM killer (OOM = out-of-memory) is invoked, and it will select some process and kill it. One holds long discussions about the choice of the victim. Maybe not a root process, maybe not a process doing raw I/O, maybe not a process that has already spent weeks doing some computation. And thus it can happen that one's emacs is killed when someone else starts more stuff than the kernel can handle. Ach. Very, very primitive.
+
+Of course, the very existence of an OOM killer is a bug.
+
+A typical case: I do umount -a in a situation where 30000 filesystems are mounted. Now umount runs out of memory and the kernel log reports
+
+Sep 19 00:33:10 mette kernel: Out of Memory: Killed process 8631 (xterm).
+Sep 19 00:33:34 mette kernel: Out of Memory: Killed process 9154 (xterm).
+Sep 19 00:34:05 mette kernel: Out of Memory: Killed process 6840 (xterm).
+Sep 19 00:34:42 mette kernel: Out of Memory: Killed process 9066 (xterm).
+Sep 19 00:35:15 mette kernel: Out of Memory: Killed process 9269 (xterm).
+Sep 19 00:35:43 mette kernel: Out of Memory: Killed process 9351 (xterm).
+Sep 19 00:36:05 mette kernel: Out of Memory: Killed process 6752 (xterm).
+
+Randomly xterm windows are killed, until the xterm window that was X's console is killed. Then X exits and all user processes die, including the umount process that caused all this.
+
+OK. This is very bad. People lose long-running processes, lose weeks of computation, just because the kernel is an optimist.
+
+Demo program 1: allocate memory without using it.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main (void) {
+        int n = 0;
+
+        while (1) {
+                if (malloc(1<<20) == NULL) {
+                        printf("malloc failure after %d MiB\n", n);
+                        return 0;
+                }
+                printf ("got %d MiB\n", ++n);
+        }
+}
+
+Demo program 2: allocate memory and actually touch it all.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+int main (void) {
+        int n = 0;
+        char *p;
+
+        while (1) {
+                if ((p = malloc(1<<20)) == NULL) {
+                        printf("malloc failure after %d MiB\n", n);
+                        return 0;
+                }
+                memset (p, 0, (1<<20));
+                printf ("got %d MiB\n", ++n);
+        }
+}
+
+Demo program 3: first allocate, and use later.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define N       10000
+
+int main (void) {
+        int i, n = 0;
+        char *pp[N];
+
+        for (n = 0; n < N; n++) {
+                pp[n] = malloc(1<<20);
+                if (pp[n] == NULL)
+                        break;
+        }
+        printf("malloc failure after %d MiB\n", n);
+
+        for (i = 0; i < n; i++) {
+                memset (pp[i], 0, (1<<20));
+                printf("%d\n", i+1);
+        }
+
+        return 0;
+}
+
+Typically, the first demo program will get a very large amount of memory before malloc() returns NULL. The second demo program will get a much smaller amount of memory, now that earlier obtained memory is actually used. The third program will get the same large amount as the first program, and then is killed when it wants to use its memory. (On a well-functioning system, like Solaris, the three demo programs obtain the same amount of memory and do not crash but see malloc() return NULL.)
+
+For example:
+
+    On an 8 MiB machine without swap running 1.2.11:
+    demo1: 274 MiB, demo2: 4 MiB, demo3: 270 / oom after 1 MiB: Killed.
+    Idem, with 32 MiB swap:
+    demo1: 1528 MiB, demo2: 36 MiB, demo3: 1528 / oom after 23 MiB: Killed.
+    On a 32 MiB machine without swap running 2.0.34:
+    demo1: 1919 MiB, demo2: 11 MiB, demo3: 1919 / oom after 4 MiB: Bus error.
+    Idem, with 62 MiB swap:
+    demo1: 1919 MiB, demo2: 81 MiB, demo3: 1919 / oom after 74 MiB: The machine hangs. After several seconds: Out of memory for bash. Out of memory for crond. Bus error.
+    On a 256 MiB machine without swap running 2.6.8.1:
+    demo1: 2933 MiB, demo2: after 98 MiB: Killed. Also: Out of Memory: Killed process 17384 (java_vm). demo3: 2933 / oom after 135 MiB: Killed.
+    Idem, with 539 MiB swap:
+    demo1: 2933 MiB, demo2: after 635 MiB: Killed. demo3: oom after 624 MiB: Killed.
+
+Other kernels have other strategies. Sometimes processes get a segfault when accessing memory that the kernel is unable to provide, sometimes they are killed, sometimes other processes are killed, sometimes the kernel hangs.
+Turning off overcommit
+Going in the wrong direction
+
+Since 2.1.27 there are a sysctl VM_OVERCOMMIT_MEMORY and proc file /proc/sys/vm/overcommit_memory with values 1: do overcommit, and 0 (default): don't. Unfortunately, this does not allow you to tell the kernel to be more careful, it only allows you to tell the kernel to be less careful. With overcommit_memory set to 1 every malloc() will succeed. When set to 0 the old heuristics are used, the kernel still overcommits.
+Going in the right direction
+
+Since 2.5.30 the values are: 0 (default): as before: guess about how much overcommitment is reasonable, 1: never refuse any malloc(), 2: be precise about the overcommit - never commit a virtual address space larger than swap space plus a fraction overcommit_ratio of the physical memory. Here /proc/sys/vm/overcommit_ratio (by default 50) is another user-settable parameter. It is possible to set overcommit_ratio to values larger than 100. (See also Documentation/vm/overcommit-accounting.)
+
+After
+
+# echo 2 > /proc/sys/vm/overcommit_memory
+
+all three demo programs were able to obtain 498 MiB on this 2.6.8.1 machine (256 MiB, 539 MiB swap, lots of other active processes), very satisfactory.
+
+However, without swap, no more processes could be started - already more than half of the memory was committed. After
+
+# echo 80 > /proc/sys/vm/overcommit_ratio
+
+all three demo programs were able to obtain 34 MiB. (Exercise: solve two equations with two unknowns and conclude that main memory was 250 MiB, and the other processes took 166 MiB.)
+
+One can view the currently committed amount of memory in /proc/meminfo, in the field Committed_AS.
+
+
+pdf live: https://www.youtube.com/watch?v=7aONIVSXiJ8
