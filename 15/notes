@@ -1,0 +1,17 @@
+exec* family functions
+
+* Functions that contain the letter p in their names ( execvp and execlp ) accept a program name and search for a program by that name in the current execution
+path; functions that don’t contain the p must be given the full path of the pro
+gram to be executed.
+
+* Functions that contain the letter v in their names ( execv , execvp , and execve ) accept the argument list for the new program as a NULL-terminated array of pointers to strings. Functions that contain the letter l ( execl , execlp , and execle ) accept the argument list using the C language’s varargs mechanism.
+
+* Functions that contain the letter e in their names ( execve and execle ) accept an additional argument, an array of environment variables.The argument should bea NULL-terminated array of pointers to character strings. Each character string should be of the form "VARIABLE=value".
+
+
+Because exec replaces the calling program with another one, it never returns unless an error occurs.
+
+Using fork and exec Together
+===========================
+
+A common pattern to run a subprogram within a program is first to fork the process and then exec the subprogram.This allows the calling program to continue execution in the parent process while the calling program is replaced by the subprogram in the child process.

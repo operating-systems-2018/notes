@@ -1,0 +1,104 @@
+
+interrupts, catching an interrupt.
+
+man signal
+https://en.wikipedia.org/wiki/Signal_(IPC)
+http://www.openbsd.org/papers/opencon04/index.html
+
+The signals SIGKILL and SIGSTOP cannot be caught, blocked, or ignored.
+
+https://stackoverflow.com/questions/17766550/ctrl-c-interrupt-event-handling-in-linux#17766999
+
+```
+To change the default action of a signal you have to register the signal to be caught. To register a signal in a C program (at least under POSIX systems) there are two functions
+
+1.    signal(int signum, sighandler_t handler);
+2.    sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);.
+```
+test code.
+^c can be catched.
+
+kill -l - to list signals.
+
+kill -2 our process. interrupt catched.
+
+how to not use it:
+
+```
+The primary problem is that if the signal interrupts malloc() or some similar function, the internal state may be temporarily inconsistent while it is moving blocks of memory between the free and used list, or other similar operations. If the code in the signal handler calls a function that then invokes malloc(), this may completely wreck the memory management.
+```
+
+https://stackoverflow.com/questions/16891019/how-to-avoid-using-printf-in-a-signal-handler/16891065#16891065
+
+why volatile is needed in c
+https://stackoverflow.com/questions/246127/why-is-volatile-needed-in-c#246148
+
+```
+Volatile tells the compiler not to optimize anything that has to do with the volatile variable.
+
+There is only one reason to use it: When you interface with hardware.
+```
+
+
+
+
+Volatile tells the compiler not to optimize anything that has to do with the volatile variable.
+
+There is only one reason to use it: When you interface with hardware.
+
+Let's say you have a little piece of hardware that is mapped into RAM somewhere and that has two addresses: a command port and a data port:
+```
+typedef struct
+{
+  int command;
+  int data;
+  int isbusy;
+} MyHardwareGadget;
+```
+Now you want to send some command:
+```
+void SendCommand (MyHardwareGadget * gadget, int command, int data)
+{
+  // wait while the gadget is busy:
+  while (gadget->isbusy)
+  {
+    // do nothing here.
+  }
+  // set data first:
+  gadget->data    = data;
+  // writing the command starts the action:
+  gadget->command = command;
+}
+```
+Looks easy, but it can fail because the compiler is free to change the order in which data and commands are written. This would cause our little gadget to issue commands with the previous data-value. Also take a look at the wait while busy loop. That one will be optimized out. The compiler will try to be clever, read the value of isbusy just once and then go into an infinite loop. That's not what you want.
+
+-----------------
+use for volatile is signal handlers. If you have code like this:
+```
+quit = 0;
+while (!quit)
+{
+    /* very small loop which is completely visible to the compiler */
+}
+```
+The compiler is allowed to notice the loop body does not touch the quit variable and convert the loop to a while (true) loop. Even if the quit variable is set on the signal handler for SIGINT and SIGTERM; the compiler has no way to know that.
+
+However, if the quit variable is declared volatile, the compiler is forced to load it every time, because it can be modified elsewhere. This is exactly what you want in this situation.
+
+volatile tells the compiler that your variable may be changed by other means, than the code that is accessing it. e.g., it may be a I/O-mapped memory location. If this is not specified in such cases, some variable accesses can be optimised, e.g., its contents can be held in a register, and the memory location not read back in again.
+
+
+use reentrant functions
+
+https://www.ibm.com/developerworks/linux/library/l-reent/index.html#N101CA
+
+```
+A reentrant function is one that can be used by more than one task concurrently without fear of data corruption. Conversely, a non-reentrant function is one that cannot be shared by more than one task unless mutual exclusion to the function is ensured either by using a semaphore or by disabling interrupts during critical sections of code. A reentrant function can be interrupted at any time and resumed at a later time without loss of data. Reentrant functions either use local variables or protect their data when global variables are used.
+
+A reentrant function:
+
+    Does not hold static data over successive calls
+    Does not return a pointer to static data; all data is provided by the caller of the function
+    Uses local data or ensures protection of global data by making a local copy of it
+    Must not call any non-reentrant functions
+```

@@ -8,7 +8,7 @@ Instructor Name:					    Norayr Chilingarian
 
 Office Location:			  336W (PAB)
 
-Office Hours:					Tue(19:30-20:30), Th(19:30-20:30), also by appointment.
+Office Hours:					Wed(19:30-20:30), Sat(15:00-16:00), also by appointment.
 
 Term/Year: 
 

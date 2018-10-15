@@ -17,6 +17,7 @@ fg, bg
 ^c, ^z
 
 environment variables
+autocomplete of paths and files in shell.
 
 -----------------------------------
 each program has

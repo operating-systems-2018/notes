@@ -1,0 +1,58 @@
+file types
+
+* ordinary
+* directories
+* links
+* block and character device files.
+
+$ ls -altr /dev/
+brw-rw----  1 root disk    8,   6 2010-07-26 14:20 sda6          --> block device
+crw-rw----  1 root root   10,  59 2010-07-26 14:21 device-mapper --> character device
+
+
+ordinary files begin with a dash.
+directories begin with 'd'.
+symbolic links begin with 'l'.
+block devices begin with 'b'.
+character devices 'c'.
+pipe file - p
+socket file 's'
+
+Character devices deal with IO on a character by character basis. The most obvious example is a keyboard, where every key generates a character on the device. The mouse is another. Every motion or button click sends a character to the /dev/input/mouse0 device. To test it out do   $cat /dev/input/mouse0 , then move your mouse (see what happens)
+
+Block devices read data in larger chunks or blocks. Data storage devices, such as IDE hard drives (/dev/hd), SCSI hard drives (/dev/sd), and CD-ROMs (/dev/cdrom or /dev/sr0) are block devices. IO interactions with block devices transact with chunks of data (blocks), which allows large quantities of data to be moved back and forth more efficiently(unlike character device). eg:  $df  -h
+
+Generically, block devices can be mounted and are cached, and char devices are for communication devices, aren’t cached nor block aligned, and can’t be mounted.
+
+character device --
+(programming) A device, such as a terminal or printer, that conveys data character by character. See also block device.
+
+
+block device --
+(programming) A device, such as a magnetic tape drive or disk drive, that conveys data in blocks through the buffer management code. Compare character device.
+
+
+
+any character in file except '/' letter.
+
+du -h
+df -h
+
+mkfifo - named pipe.
+
+it can exist even if noone uses   that.
+
+
+Named pipes are created via mkfifo or mknod:
+
+$ mkfifo /tmp/testpipe
+$ mknod /tmp/testpipe p
+
+
+
+
+
+
+http://tldp.org/LDP/lpg/node11.html
+http://www.linuxjournal.com/content/using-named-pipes-fifos-bash
+

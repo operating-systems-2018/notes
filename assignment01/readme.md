@@ -16,4 +16,4 @@ We will compile the program by changing in to the directory, and running 'make'.
 
 We recommend to use C (not C++), Pascal (fpc) or Go to solve this task, but you are free to use any programming language you prefer.
 
-Deadline: 23:59 Thu October 6.
+Deadline: 23:59 Sat October 13.
