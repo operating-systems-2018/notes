@@ -15,3 +15,59 @@ Using fork and exec Together
 ===========================
 
 A common pattern to run a subprogram within a program is first to fork the process and then exec the subprogram.This allows the calling program to continue execution in the parent process while the calling program is replaced by the subprogram in the child process.
+
+The use of fork() and exec() exemplifies the spirit of UNIX in that it provides a very simple way to start new processes.
+
+The fork() call makes a near duplicate of the current process, identical in almost every way (not everything is copied over, for example, resource limits in some implementations, but the idea is to create as close a copy as possible). One process calls fork() while two processes return from it - sounds bizarre but it's really quite elegant
+
+The new process (called the child) gets a different process ID (PID) and has the the PID of the old process (the parent) as its parent PID (PPID).
+
+Because the two processes are now running exactly the same code, they need to be able to tell which is which - the return code of fork() provides this information - the child gets 0, the parent gets the PID of the child (if the fork() fails, no child is created and the parent gets an error code). That way, the parent knows the PID of the child and can communicate with it, kill it, wait for it and so on (the child can always find its parent process with a call to getppid()).
+
+The exec() call replaces the entire current contents of the process with a new program. It loads the program into the current process space and runs it from the entry point.
+
+So, fork() and exec() are often used in sequence to get a new program running as a child of a current process. Shells typically do this whenever you try to run a program like find - the shell forks, then the child loads the find program into memory, setting up all command line arguments, standard I/O and so forth.
+
+But they're not required to be used together. It's perfectly acceptable for a program to call fork() without a following exec() if, for example, the program contains both parent and child code (you need to be careful what you do, each implementation may have restrictions). This was used quite a lot (and still is) for daemons which simply listen on a TCP port and fork a copy of themselves to process a specific request while the parent goes back to listening. For this situation, the program contains both the parent and the child code.
+
+Similarly, programs that know they're finished and just want to run another program don't need to fork(), exec() and then wait()/waitpid() for the child. They can just load the child directly into their current process space with exec().
+
+Some UNIX implementations have an optimized fork() which uses what they call copy-on-write. This is a trick to delay the copying of the process space in fork() until the program attempts to change something in that space. This is useful for those programs using only fork() and not exec() in that they don't have to copy an entire process space. Under Linux, fork() only makes a copy of the page tables and a new task structure, exec() will do the grunt work of "separating" the memory of the two processes.
+
+https://stackoverflow.com/questions/4204915/please-explain-the-exec-function-and-its-family
+
+The following diagram illustrates the typical fork/exec operation where the bash shell is used to list a directory with the ls command:
+
+```
+
++--------+
+| pid=7  |
+| ppid=4 |
+| bash   |
++--------+
+    |
+    | calls fork
+    V
++--------+             +--------+
+| pid=7  |    forks    | pid=22 |
+| ppid=4 | ----------> | ppid=7 |
+| bash   |             | bash   |
++--------+             +--------+
+    |                      |
+    | waits for pid 22     | calls exec to run ls
+    |                      V
+    |                  +--------+
+    |                  | pid=22 |
+    |                  | ppid=7 |
+    |                  | ls     |
+    V                  +--------+
++--------+                 |
+| pid=7  |                 | exits
+| ppid=4 | <---------------+
+| bash   |
++--------+
+    |
+    | continues
+    V
+
+```
