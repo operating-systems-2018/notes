@@ -63,7 +63,7 @@ in order to execute a given program.
 how to contribute the assignment
 ================================
 
-TODO: classroom link.
+https://classroom.github.com/a/modEBU4x
 
 hints
 ======
@@ -82,4 +82,4 @@ manual pages of the system calls you would/might want to use (getpid(), fork(), 
 Deadline
 ========
 
-TODO.
+11/09/2018 23:59 +0400
