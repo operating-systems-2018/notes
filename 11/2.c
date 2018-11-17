@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define N       10000
+#define N       9500
 
 int main (void) {
         int i, n = 0;

@@ -272,3 +272,8 @@ One can view the currently committed amount of memory in /proc/meminfo, in the f
 
 
 pdf live: https://www.youtube.com/watch?v=7aONIVSXiJ8
+
+
+https://msdn.microsoft.com/en-us/library/windows/desktop/aa366887%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+
+https://stackoverflow.com/questions/17671423/where-is-the-stack-memory-allocated-from-for-a-linux-process#17672355
