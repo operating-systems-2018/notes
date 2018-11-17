@@ -1,0 +1,78 @@
+env
+===
+
+what if we need only one environment variable?
+
+getenv()
+
+
+IO
+==
+
+You already know stdin/stdout, apparently there is also stderr.
+(to separate error stream from the output stream)
+
+File descriptors:
+
+0 - stdin
+1 - stdout
+2 - stderr
+
+In shell
+
+$ program > output_file.txt 2>&1
+$ program 2>&1 | filter
+
+The 2>&1 syntax indicates that file descriptor 2 ( stderr ) should be merged into file descriptor 1 ( stdout ). Note that 2>&1 must follow a file redirection (the first example) but must precede a pipe redirection (the second example).
+
+Note that stdout is buffered. Data written to stdout is not sent to the console (or other device, if it’s redirected) until the buffer fills, the program exits normally, or stdout is closed.You can explicitly flush the buffer by calling the following:
+```
+fflush (stdout);
+```
+
+In contrast, stderr is not buffered; data written to stderr goes directly to the console.
+
+
+program argument's conventions:
+
+* usually --help and -h, or --size and -s have the same meaning.
+* there are arguments that require own arguments. (-o filename).
+
+function getopt_long()
+======================
+
+because that's a boring task to parse cmdline arguments, we have libraries for that.
+one of them is getopt, it accepts long and short options. declarations are in <getopt.h>
+
+Let's say we need to write a program which accepts the following arguments.
+
+-----------------------------------------------------------------
+short  form         long form           purpose
+-h                  --help              show help and exit
+-o filename         --output filename   output filename
+-v                  --verbose           more messages
+---------------------------------------------------------------
+
+const struct option long_options[] = 
+{
+    { “help”,     0,  NULL,   ‘h’ },
+    { “output”,   1,  NULL,   ‘o’ },
+    { “verbose”,  0,  NULL,   ‘v’ },
+    { NULL,       0,  NULL,   0   }
+};
+
+
+
+You invoke the getopt_long function, passing it the argc and argv arguments to main, the character string describing short options, and the array of struct option elements describing the long options.
+
+* Each time you call getopt_long, it parses a single option, returning the short option letter for that option, or –1 if no more options are found.
+
+* Typically, you’ll call getopt_long in a loop, to process all the options the user has specified, and you’ll handle the specific options in a switch statement.
+
+* If getopt_long encounters an invalid option (an option that you didn’t specify as a valid short or long option), it prints an error message and returns the character ? (a question mark). Most programs will exit in response to this, possibly after displaying usage information.
+
+* When handling an option that takes an argument, the global variable optarg points to the text of that argument.
+
+* After getopt_long has finished parsing all the options, the global variable optind contains the index (into argv ) of the first nonoption argument.
+
+

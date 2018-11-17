@@ -1,0 +1,73 @@
+threads
+
+in traditional operating systems, each process has an address space and a single thread of control. that is almost the definition of a process.
+
+there are situations in which it is desirable to have multiple threads of control in the same address space running in quasi-parallel, as though they were separate processes(except for the shared address space). those are usually called 'threads', or 'lightweight processes'.
+
+one way of looking at the process is that it is a way to group related resources together. process has an address space containing
+
+* program text and data
+
+* open files
+
+* child processes
+
+* pending alarms
+
+* signal handlers
+
+and other resources.
+
+by putting them together in a form of process, they (resources) can be managed more easily.
+
+the other concept process has is a thread of execution, usually shortened to just 'thread'.
+
+the thread has
+
+* a program counter (keeps track of which instruction to execute next)
+
+* registers (to hold its current working variables)
+
+* stack (execution history, with one frame for each procedure called but not yet returned from).
+
+Although a thread must execute in some process, the thread and its process are different concepts and can be treated separately. 
+
+----------------------
+
+processes are used to group resources together
+
+threads are the entities scheduled for execution on the cpu
+
+---------------------
+
+what threads add to the process model is to allow multiple executions to take place in the same process environment, to a large degree independent of one another.
+
+
+
+fork() vs clone()
+-------------------------------
+
+
+
+fork() was the original UNIX system call. It can only be used to create new processes, not threads. Also, it is portable.
+
+In Linux, clone() is a new, versatile system call which can be used to create a new thread of execution. Depending on the options passed, the new thread of execution can adhere to the semantics of a UNIX process, a POSIX thread, something in between, or something completely different (like a different container). You can specify all sorts of options dictating whether memory, file descriptors, various namespaces, signal handlers, and so on get shared or copied.
+
+Since clone() is the superset system call, the implementation of the fork() system call wrapper in glibc actually calls clone(), but this is an implementation detail that programmers don't need to know about. The actual real fork() system call still exists in the Linux kernel for backward compatibility reasons even though it has become redundant, because programs that use very old versions of libc, or another libc besides glibc, might use it.
+
+clone() is also used to implement the pthread_create() POSIX function for creating threads.
+
+Portable programs should call fork() and pthread_create(), not clone().
+
+
+
+fork() is just a particular set of flags to the system call clone(). clone() is general enough to create either a "process" or a "thread" or even weird things that are somewhere between processes and threads (for example, different "processes" that share the same file descriptor table).
+
+Essentially, for every "type" of information associated with an execution context in the kernel, clone() gives you the choice of aliasing that information or copying it. Threads correspond to aliasing, processes correspond to copying. By specifying intermediate combinations of flags to clone(), you can create weird things that aren't threads or processes. You usually shouldn't do this, and I imagine there was some debate during the development of the Linux kernel about whether it should allow for such a general mechanism as clone().
+
+
+https://unix.stackexchange.com/questions/199686/fork-vs-clone-on-2-6-kernel-linux
+
+
+
+
