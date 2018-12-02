@@ -1,0 +1,61 @@
+
+previously on osp.
+
+client makes:
+socket()
+connect()
+then read(), write()
+
+server does
+socket()
+bind()
+listen()
+accept()
+then read(), write()
+
+we need some structures in order to create and use sockets.
+
+http://beej.us/guide/bgnet/output/html/multipage/sockaddr_inman.html
+
+These are the basic structures for all syscalls and functions that deal with internet addresses. Often you'll use getaddrinfo() to fill these structures out, and then will read them when you have to.
+
+In memory, the struct sockaddr_in and struct sockaddr_in6 share the same beginning structure as struct sockaddr, and you can freely cast the pointer of one type to the other without any harm, except the possible end of the universe.
+
+Just kidding on that end-of-the-universe thing...if the universe does end when you cast a struct sockaddr_in* to a struct sockaddr*, I promise you it's pure coincidence and you shouldn't even worry about it.
+
+So, with that in mind, remember that whenever a function says it takes a struct sockaddr* you can cast your struct sockaddr_in*, struct sockaddr_in6*, or struct sockadd_storage* to that type with ease and safety.
+
+struct sockaddr_in is the structure used with IPv4 addresses (e.g. "192.0.2.10"). It holds an address family (AF_INET), a port in sin_port, and an IPv4 address in sin_addr.
+
+There's also this sin_zero field in struct sockaddr_in which some people claim must be set to zero. Other people don't claim anything about it (the Linux documentation doesn't even mention it at all), and setting it to zero doesn't seem to be actually necessary. So, if you feel like it, set it to zero using memset().
+
+Now, that struct in_addr is a weird beast on different systems. Sometimes it's a crazy union with all kinds of #defines and other nonsense. But what you should do is only use the s_addr field in this structure, because many systems only implement that one.
+
+// IPv4:
+
+struct sockaddr_in ip4addr;
+int s;
+
+ip4addr.sin_family = AF_INET;
+ip4addr.sin_port = htons(3490);
+inet_pton(AF_INET, "10.0.0.1", &ip4addr.sin_addr);
+
+s = socket(PF_INET, SOCK_STREAM, 0);
+bind(s, (struct sockaddr*)&ip4addr, sizeof ip4addr);
+
+// IPv6:
+
+struct sockaddr_in6 ip6addr;
+int s;
+
+ip6addr.sin6_family = AF_INET6;
+ip6addr.sin6_port = htons(4950);
+inet_pton(AF_INET6, "2001:db8:8714:3a90::12", &ip6addr.sin6_addr);
+
+s = socket(PF_INET6, SOCK_STREAM, 0);
+bind(s, (struct sockaddr*)&ip6addr, sizeof ip6addr);
+
+gethostbyname()
+
+getaddrinfo()
+http://beej.us/guide/bgnet/output/html/multipage/getaddrinfoman.html

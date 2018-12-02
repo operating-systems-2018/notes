@@ -1,0 +1,9 @@
+getaddrinfo is slower than ping when resolving domain names. I think ping uses gethostbyname to resolve a domain name. The question becomes whether getaddrinfo is slower than gethostbyname. After testing with both functions, we find that getaddrinfo is really slow compared to gethostbyname. By strace tracking,  we find getaddrinfo will communicate with DNS server 10 times and gethostbyname will communicate with DNS server communication twice.
+
+gethostbyname is an old way to resolve domain name, The disadvantage of it is that it does not support IPV6, so there is a gethostbyname2 which replaces gethostbyname, it supports both IPV4 and IPV6 resolving. Textbooks recommend to use getaddrinfo. The reason why it is slow is that getaddrinfo will resolve both IPV6 and IPv4 by default. If you set getaddrinfo only to resolve IPV4, the speed is the same as gethostbyname , it will communicate with DNS server twice
+
+gethostbyname and getaddrinfo are bothworking in  blocked mode, C-ares library can be used to achieve asynchronous resolving. 
+
+from https://www.pixelstech.net/article/1345057573-gethostbyname-vs-getaddrinfo
+
+also, look at https://github.com/angrave/SystemProgramming/wiki/Networking,-Part-2:-Using-getaddrinfo
