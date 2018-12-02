@@ -1,0 +1,4 @@
+The ioctl system call is an all-purpose interface for controlling hardware devices.The
+first argument to ioctl is a file descriptor, which should be opened to the device that
+you want to control.The second argument is a request code that indicates the opera-
+tion that you want to perform.Various request codes are available for different devices.
