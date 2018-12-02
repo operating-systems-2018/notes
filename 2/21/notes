@@ -1,0 +1,241 @@
+https://en.wikipedia.org/wiki/C10k_problem
+
+from https://softwareengineering.stackexchange.com/questions/181397/many-blocking-vs-single-non-blocking-workers
+
+Many blocking workers are good because:
+
+    It is more responsive.
+    Easier to introduce new connections (workers pick them up them selves rather than outsider waiting till it can add it to a synchronized list).
+    CPU usage balances automatically (without any additional effort) as number of connections increases and decreases.
+    Less CPU usage (blocked threads are taken out of the execution loop and do not require any logic for jumping between clients).
+
+Single non-blocking worker is good because:
+
+    Uses less memory.
+    Less vulnerable to lazy clients (which connect to the server and send headers slowly or don't send at all).
+
+Blocking:
+
+For instance, Apache by default uses a blocking scheme where the process is forked for every connection. That means every connection needs its own memory space and the sheer amount of context-switching overhead increases more as the number of connections increases. But the benefit is, once a connection is closed the context can be disposed and any/all memory can be easily retrieved.
+
+A multi-threaded approach would be similar in that the overhead of context switching increases with the number of connections but may be more memory efficient in a shared context. The problem with such an approach is it's difficult to manage shared memory in a manner that's safe. The approaches to overcome memory synchronization problems often include their own overhead, for instance locking may freeze the main thread on CPU-intensive loads, and using immutable types adds a lot of unnecessary copying of data.
+
+AFAIK, using a multi-process approach on a blocking HTTP server is generally preferred because it's safer/simpler to manage/recovery memory in a manner that's safe. Garbage collection becomes a non-issue when recovering memory is as simple as stopping a process. For long-running processes (ie a daemon) that characteristic is especially important.
+
+While context-switching overhead may seem insignificant with a small number of workers, the disadvantages become more relevant as the load scales up to hundreds-to-thousands of concurrent connections. At best, context switching scales O(n) to the number of workers present but in practice it's most-likely worse.
+
+Where servers that use blocking may not be the ideal choice for IO heavy loads, they are ideal for CPU-intensive work and message passing is kept to a minumum.
+
+Non-Blocking:
+
+Non-blocking would be something like Node.js or nginx. These are especially known for scaling to a much larger number of connections per node under IO-intensive load. Basically, once people hit the upper limit of what thread/process-based servers could handle they started to explore alternative options. This is otherwise known as the C10K problem (ie the ability to handle 10,000 concurrent connections).
+
+Non-blocking async servers generally shares a lot of characteristics with a multi-threaded-with-locking approach in that you have to be careful to avoid CPU-intensive loads because you don't want to overload the main thread. The advantage is that the overhead incurred by context switching is essentially eliminated and with only one context message passing becomes a non-issue.
+
+While it may not work for many networking protocols, HTTPs stateless nature works especially well for non-blocking architectures. By using the combination of a reverse-proxy and multiple non-blocking HTTP servers it's possible to identify and route around the nodes experiencing heavy load.
+
+Even on a server that only has one node, it's very common for the setup to include one server per processor core to maximize throughput.
+
+Both:
+
+The 'ideal' use case would be a combination of both. A reverse proxy at the front dedicated to routing requests at the top, then a mix of blocking and non-blocking servers. Non-blocking for IO tasks like serving static content, cache content, html content. Blocking for CPU-heavy tasks like encoding images/video, streaming content, number crunching, database writes, etc.
+
+
+from http://www.scottklement.com/rpg/socktut/nonblocking.html
+
+For example, let's say that you're writing a web browser. You try to connect to a web server, but the server isn't responding. When a user presses (or clicks) a stop button, you want the connect() API to stop trying to connect.
+
+With what you've learned so far, that can't be done. When you issue a call to connect(), your program doesn't regain control until either the connection is made, or an error occurs.
+
+The solution to this problem is called "non-blocking sockets"
+
+By default, TCP sockets are in "blocking" mode. For example, when you call recv() to read from a stream, control isn't returned to your program until at least one byte of data is read from the remote site. This process of waiting for data to appear is referred to as "blocking". The same is true for the write() API, the connect() API, etc. When you run them, the connection "blocks" until the operation is complete.
+
+Going back to the "web browser" example, if you put the socket that was connecting to the web server into non-blocking mode, you could then call connect(), print a message saying "connecting to host www.floofy.com..." then maybe do something else, and them come back to connect() again. If connect() works the second time, you might print "Host contacted, waiting for reply..." and then start calling send() and recv(). If the connect() is still pending, you might check to see if the user has pressed a "abort" button, and if so, call close() to stop trying to connect.
+
+from http://beej.us/guide/bgnet/output/html/multipage/advanced.html	
+
+ If you don't want a socket to be blocking, you have to make a call to fcntl():
+
+```
+#include <unistd.h>
+#include <fcntl.h>
+.
+.
+.
+sockfd = socket(PF_INET, SOCK_STREAM, 0);
+fcntl(sockfd, F_SETFL, O_NONBLOCK);
+.
+.
+.
+```
+
+By setting a socket to non-blocking, you can effectively "poll" the socket for information. If you try to read from a non-blocking socket and there's no data there, it's not allowed to block—it will return -1 and errno will be set to EAGAIN or EWOULDBLOCK.
+
+(Wait—it can return EAGAIN or EWOULDBLOCK? Which do you check for? The specification doesn't actually specify which your system will return, so for portability, check them both.)
+
+Generally speaking, however, this type of polling is a bad idea. If you put your program in a busy-wait looking for data on the socket, you'll suck up CPU time like it was going out of style. A more elegant solution for checking to see if there's data waiting to be read comes in the following section on select().
+
+select()—Synchronous I/O Multiplexing
+
+This function is somewhat strange, but it's very useful. Take the following situation: you are a server and you want to listen for incoming connections as well as keep reading from the connections you already have.
+
+No problem, you say, just an accept() and a couple of recv()s. Not so fast, buster! What if you're blocking on an accept() call? How are you going to recv() data at the same time? "Use non-blocking sockets!" No way! You don't want to be a CPU hog. What, then?
+
+select() gives you the power to monitor several sockets at the same time. It'll tell you which ones are ready for reading, which are ready for writing, and which sockets have raised exceptions, if you really want to know that.
+
+```
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+int select(int numfds, fd_set *readfds, fd_set *writefds,
+           fd_set *exceptfds, struct timeval *timeout);
+```
+
+The function monitors "sets" of file descriptors; in particular readfds, writefds, and exceptfds. If you want to see if you can read from standard input and some socket descriptor, sockfd, just add the file descriptors 0 and sockfd to the set readfds. The parameter numfds should be set to the values of the highest file descriptor plus one. In this example, it should be set to sockfd+1, since it is assuredly higher than standard input (0).
+
+When select() returns, readfds will be modified to reflect which of the file descriptors you selected which is ready for reading. You can test them with the macro FD_ISSET(), below.
+
+Before progressing much further, I'll talk about how to manipulate these sets. Each set is of the type fd_set. The following macros operate on this type:
+
+```
+FD_SET(int fd, fd_set *set);	Add fd to the set.
+
+FD_CLR(int fd, fd_set *set);	Remove fd from the set.
+
+FD_ISSET(int fd, fd_set *set);	Return true if fd is in the set.
+
+FD_ZERO(fd_set *set);			Clear all entries from the set.
+```
+
+poll()
+
+http://beej.us/guide/bgnet/output/html/multipage/pollman.html
+
+
+
+
+errno
+
+Holds the error code for the last system call
+Prototypes
+
+#include <errno.h>
+
+int errno;
+
+Description
+
+This is the variable that holds error information for a lot of system calls. If you'll recall, things like socket() and listen() return -1 on error, and they set the exact value of errno to let you know specifically which error occurred.
+
+The header file errno.h lists a bunch of constant symbolic names for errors, such as EADDRINUSE, EPIPE, ECONNREFUSED, etc. Your local man pages will tell you what codes can be returned as an error, and you can use these at run time to handle different errors in different ways.
+
+Or, more commonly, you can call perror() or strerror() to get a human-readable version of the error.
+
+One thing to note, for you multithreading enthusiasts, is that on most systems errno is defined in a threadsafe manner. (That is, it's not actually a global variable, but it behaves just like a global variable would in a single-threaded environment.)
+Return Value
+
+The value of the variable is the latest error to have transpired, which might be the code for "success" if the last action succeeded.
+Example
+
+```
+s = socket(PF_INET, SOCK_STREAM, 0);
+if (s == -1) {
+    perror("socket"); // or use strerror()
+}
+
+tryagain:
+if (select(n, &readfds, NULL, NULL) == -1) {
+    // an error has occurred!!
+
+    // if we were only interrupted, just restart the select() call:
+    if (errno == EINTR) goto tryagain;  // AAAA!  goto!!!
+
+    // otherwise it's a more serious error:
+    perror("select");
+    exit(1);
+}
+```
+
+fcntl()
+
+Control socket descriptors
+Prototypes
+
+#include <sys/unistd.h>
+#include <sys/fcntl.h>
+
+int fcntl(int s, int cmd, long arg);
+
+Description
+
+This function is typically used to do file locking and other file-oriented stuff, but it also has a couple socket-related functions that you might see or use from time to time.
+
+Parameter s is the socket descriptor you wish to operate on, cmd should be set to F_SETFL, and arg can be one of the following commands. (Like I said, there's more to fcntl() than I'm letting on here, but I'm trying to stay socket-oriented.)
+
+O_NONBLOCK
+
+
+Set the socket to be non-blocking. See the section on blocking for more details.
+
+O_ASYNC
+
+
+Set the socket to do asynchronous I/O. When data is ready to be recv()'d on the socket, the signal SIGIO will be raised. This is rare to see, and beyond the scope of the guide. And I think it's only available on certain systems.
+
+Return Value
+
+Returns zero on success, or -1 on error (and errno will be set accordingly.)
+
+Different uses of the fcntl() system call actually have different return values, but I haven't covered them here because they're not socket-related. See your local fcntl() man page for more information.
+Example
+```
+int s = socket(PF_INET, SOCK_STREAM, 0);
+
+fcntl(s, F_SETFL, O_NONBLOCK);  // set to non-blocking
+fcntl(s, F_SETFL, O_ASYNC);     // set to asynchronous I/O
+```
+
+
+Using poll() instead of select()
+
+The poll() API is part of the Single Unix Specification and the UNIX® 95/98 standard. The poll() API performs the same API as the existing select() API. The only difference between these two APIs is the interface provided to the caller.
+
+The select() API requires that the application pass in an array of bits in which one bit is used to represent each descriptor number. When descriptor numbers are very large, it can overflow the 30KB allocated memory size, forcing multiple iterations of the process. This overhead can adversely affect performance.
+
+The poll() API allows the application to pass an array of structures rather than an array of bits. Because each pollfd structure can contain up to 8 bytes, the application only needs to pass one structure for each descriptor, even if descriptor numbers are very large.
+
+https://www.ibm.com/support/knowledgecenter/en/ssw_i5_54/rzab6/poll.htm
+
+comparison between poll vs select vs event based
+
+https://daniel.haxx.se/docs/poll-vs-select.html
+
+ select() and poll() provide basically the same functionality. They only differ in the details:
+
+    select() overwrites the fd_set variables whose pointers are passed in as arguments 2-4, telling it what to wait for. This makes a typical loop having to either have a backup copy of the variables, or even worse, do the loop to populate the bitmasks every time select() is to be called. poll() doesn't destroy the input data, so the same input array can be used over and over.
+    poll() handles many file handles, like more than 1024 by default and without any particular work-arounds. Since select() uses bitmasks for file descriptor info with fixed size bitmasks it is much less convenient. On some operating systems like Solaris, you can compile for support with > 1024 file descriptors by changing the FD_SETSIZE define.
+    poll offers somewhat more flavours of events to wait for, and to receive, although for most common networked cases they don't add a lot of value
+    Different timeout values. poll takes milliseonds, select takes a struct timeval pointer that offers microsecond resolution. In practise however, there probably isn't any difference that will matter.
+
+Going with an event-based function instead should provide the same functionality as well. They do however often force you to use a different approach since they're often callback-based that get triggered by events, instead of the loop style approach select and poll encourage.
+
+speed
+
+poll and select are basically the same speed-wise: slow.
+
+
+    They both handle file descriptors in a linear way. The more descriptors you ask them to check, the slower they get. As soon as you go beyond perhaps a hundred file descriptors or so - of course depending on your CPU and hardware - you will start noticing that the mere waiting for file descriptor activity and the following checking which file descriptor that it was, takes a significant time and becomes a bottle neck.
+    The select() API with a "max fds" as first argument of course forces a scan over the bitmasks to find the exact file descriptors to check for, which the poll() API avoids. A small win for poll().
+    select() only uses (at maximum) three bits of data per file descriptor, while poll() typically uses 64 bits per file descriptor. In each syscall invoke poll() thus needs to copy a lot more over to kernel space. A small win for select().
+
+Going with an event-based function is the only sane option if you go beyond a small number of file descriptors. The libev guys did a benchmarking of libevent against libev and their results say clearly that libev is the faster one.
+
+http://www.kegel.com/c10k.html
+
+Benchmarks
+
+http://bulk.fefe.de/scalability/
+
+

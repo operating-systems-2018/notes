@@ -1,0 +1,25 @@
+from http://paultyma.blogspot.am/2008/03/writing-java-multithreaded-servers.html
+
+http://www.mailinator.com/tymaPaulMultithreaded.pdf
+https://web.archive.org/web/20140723002904/http://www.mailinator.com/tymaPaulMultithreaded.pdf
+
+I've encountered some very strong misperceptions in the world that:
+
+1) Java asynchronous NIO has higher throughput than Java IO (false)
+It doesn't. It loses by 20-30%. Even with single thread against single thread. If multiple threads enter the equation (and multiple cores) which of course blocking I/O is intent on using - its skews even farther.
+
+2) Thread context switching is expensive (false)
+New threading libraries across the board make this negligble. I knew Linux NPTL was fast, but I was quite surprised how well Windows XP did (graphs inside notes).
+
+3) Synchronization is expensive (false, usually)
+It is possible for synchronization to be fully optimized away. In cases where it couldn't it did have a cost - however given we have multicore systems now its uncommon to write a fully singly-threaded server (synch or asynch), in other words every server design will pay this cost - but, non-blocking-data-structures ameliorate this cost significantly (again graphs inside show this).
+
+4) Thread per connection servers cannot scale (false)
+Thats incorrect at least up to an artificial limit set by JDK 1.6. 15k (or 30k depending on the JVM) threads is really no problem (note linux 2.6 with NPTL using C++ is fully happy with a few hundred-thousand threads running, Java sadly imposes an arbitrary limit). If you need more connections than this (and aren't maxing your CPU or bandwidth) - you can still use blocking IO but must depart from thread-per-connection. Or fall back to NIO.
+
+why events are a bad idea (for high concurrency servers), rob von behren
+https://people.eecs.berkeley.edu/~brewer/papers/threads-hotos-2003.pdf
+
+
+http://mmcgrana.github.io/2010/07/threaded-vs-evented-servers.html
+
