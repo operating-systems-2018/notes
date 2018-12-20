@@ -1,4 +1,4 @@
-
+link: https://classroom.github.com/a/Ax50X1zs
 
 in this assignment you are supposed to write simple internet client and server.
 
@@ -71,4 +71,4 @@ references
 
 deadline
 ========
-
+19/12 23:59
