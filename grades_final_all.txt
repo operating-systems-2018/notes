@@ -1,18 +1,18 @@
 aaronswartz 85
-kenthompson 99
+kenthompson 99        +3
 adalovelace 97
 edsgerdijkstra 94
-margarethamilton 97
-niklauswirth 99
-johnmccarthy 98
-briankernighan 96
-paulvixie 99
-robpike 93
+margarethamilton 97   +3
+niklauswirth 99       +5
+johnmccarthy 98       +3
+briankernighan 96     +2
+paulvixie 99          +2
+robpike 93            +2
 alfredaho 99
-fabricebellard 98
-norbertwiener 99
-johnbackus 86
-avietevanian 98
+fabricebellard 98     +1
+norbertwiener 99      +4
+johnbackus 86         +0
+avietevanian 98       +2
 adelegoldberg 100
 peternaur 99
-jamiezawinski 98
+jamiezawinski 98      +3
