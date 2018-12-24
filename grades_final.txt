@@ -1,8 +1,7 @@
 aaronswartz     95
 kenthompson     100
-jeffreyullman		
 adalovelace     100
-edsgerdijkstra	
+edsgerdijkstra    90
 margarethamilton      100
 niklauswirth      100
 johnmccarthy      100
